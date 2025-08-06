@@ -29,3 +29,10 @@ class SignUpForm(UserCreationForm):
         # self.fields['password2'].widget.attrs['placeholder'] = 'Confirm Password'
         self.fields['password2'].label = 'Confirm Password'
         self.fields['password2'].help_text = '<span class="form-text text-muted"><small>Enter the same password as before, for verification.</small></span>'	
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_active = False
+        if commit:
+            user.save()
+        return user

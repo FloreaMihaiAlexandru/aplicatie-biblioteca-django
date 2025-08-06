@@ -1,34 +1,57 @@
 {%extends 'base.html' %}
 
 {% block content %}
-<div class="co1-md-6 offset-md-3">
+
 
     {%if user.is_authenticated %}
 
-    <h1>Welcome, {{ user.username }}!</h1>
+        <h1>Books:</h1> <br />
+        {%if books %}
 
-    {% else %}
+            <ul class="list-group">
+                <div class="d-flex flex-wrap gap-3">
+                    {%for book in books %}
+                        {%if book.available_copies > 0 %}
+                        <div class="card" style="width: 18rem;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{book.title}}</h5>
+                                <h6 class="card-subtitle mb-2 text-body-secondary">{{ book.author|default:"Unknown" }}</h6>
+                                <p class="card-text">Released on: {{book.published_date|default:"Unknown"}} 
+                                    <br />
+                                    Available copies: {{book.available_copies}}
+                                </p>
+                                <a href="#" class="card-link">Card link</a>
+                                <a href="#" class="card-link">Another link</a>
+                            </div>
+                        </div>
+                        {%endif%}
+                    {%endfor%}
+            </div>
 
-    <h1>Login</h1>
-    <br/>
+        {%endif%}
 
-    <form method="POST" action="{%url 'home' %}">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label class="form-label">Username</label>
-            <input type="text" class="form-control w-50" name="username" required>
-            
-        </div>
-        <div class="mb-3">
-            <label for="exampleInputPassword1" class="form-label">Password</label>
-            <input type="password" class="form-control w-50" name="password" required>
-        </div>
-        
-        
-        <button type="submit" class="btn btn-secondary">Submit</button>
-    </form>
+        {% else %}
 
-    {%endif%}
+        <h1>Login</h1>
+        <br />
 
-</div>
+        <form method="POST" action="{%url 'home' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control w-50" name="username" required>
+
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">Password</label>
+                <input type="password" class="form-control w-50" name="password" required>
+            </div>
+
+
+            <button type="submit" class="btn btn-secondary">Submit</button>
+        </form>
+
+        {%endif%}
+
+
 {% endblock %}
