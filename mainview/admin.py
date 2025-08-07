@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User, Group
 
 from .models import Book, Rent
 # Register your models here.
@@ -18,3 +20,19 @@ class RentAdmin(admin.ModelAdmin):
     list_filter = ('rent_date', 'return_date')
     ordering = ('-rent_date',)
     list_per_page = 20
+
+@admin.action(description="Verify user")
+def make_users_active(modeladmin, request, queryset):
+    queryset.update(is_active=True)
+
+@admin.action(description="Deactivate selected users")
+def deactivate_users(modeladmin, request, queryset):
+    queryset.update(is_active=False)
+
+
+class CustomUserAdmin(UserAdmin):
+    actions = [make_users_active, deactivate_users]
+
+admin.site.unregister(User)
+admin.site.unregister(Group)
+admin.site.register(User, CustomUserAdmin)
