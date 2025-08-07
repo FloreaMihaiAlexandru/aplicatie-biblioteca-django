@@ -1,9 +1,12 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
+from django.db import models
+
+from datetime import datetime, timedelta
 
 from .forms import SignUpForm
-from .models import Book
+from .models import Book, Rent
 
 User = get_user_model()
 
@@ -62,3 +65,51 @@ def register_view(request):
     else:
         form = SignUpForm()
         return render(request, 'register.html', {'form': form})
+    
+
+def search_view(request):
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return redirect('home')
+    result = Book.objects.filter(
+        models.Q(title__icontains=query) | 
+        models.Q(author__icontains=query)
+    )
+    return render(request, "home.html", {"books": result})
+
+
+def rentBook_view(request, book_id):
+    try:
+        book = Book.objects.get(id=book_id)
+    except Book.DoesNotExist:
+        messages.error(request, 'Book not found.')
+        return redirect('home')
+    
+    if request.method == 'POST':
+        rental_period = int(request.POST.get('rental_period'))
+        return_date = datetime.now() + timedelta(days=rental_period)
+
+        if book.available_copies <= 0:
+            messages.error(request, 'No copies available for rent.')
+            return redirect('home')
+
+        user = request.user
+        if not user.is_authenticated:
+            messages.error(request, 'You must be logged in to rent a book.')
+            return redirect('home')
+
+        # Create a Rent object
+        Rent.objects.create(
+            book=book,
+            user=user,
+            return_date=return_date
+        )
+
+        # Decrease the available copies
+        book.available_copies -= 1
+        book.save()
+
+        messages.success(request, f'You have successfully rented {book.title}.')
+        return redirect('home')
+
+    return render(request, "rentBook.html", {"book": book})

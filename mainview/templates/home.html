@@ -20,8 +20,7 @@
                                     <br />
                                     Available copies: {{book.available_copies}}
                                 </p>
-                                <a href="#" class="card-link">Card link</a>
-                                <a href="#" class="card-link">Another link</a>
+                                <a href="{% url 'rentBook' book.id %}" class="card-link">Rent</a>
                             </div>
                         </div>
                         {%endif%}
