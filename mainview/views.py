@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
 from django.db import models
+from django.utils import timezone
 
 from datetime import datetime, timedelta
 
@@ -113,3 +114,21 @@ def rentBook_view(request, book_id):
         return redirect('home')
 
     return render(request, "rentBook.html", {"book": book})
+
+
+def reports_view(request):
+    if not request.user.is_staff:
+        messages.error(request, 'You do not have permission to view this page.')
+        return redirect('home')
+
+    rented_books = Rent.objects.select_related('book', 'user').all()
+    available_books = Book.objects.filter(available_copies__gt=0)
+    unavailable_books = Book.objects.filter(available_copies=0)
+
+    return render(request, "reports.html", {
+        "rented_books": rented_books,
+        "available_books": available_books,
+        "unavailable_books": unavailable_books,
+        'now': timezone.now()
+
+    })
