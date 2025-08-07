@@ -1,7 +1,6 @@
-{%extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
-
 <div class="container mt-5">
 
     <!-- Rented Books -->
@@ -17,27 +16,43 @@
                         <th>User</th>
                         <th>Rented On</th>
                         <th>Return By</th>
+                        <th>Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for rent in rented_books %}
-                    {%if rent.returned == 0 %}
-                    <tr>
-                        <td>{{ rent.book.title }}</td>
-                        <td><i class="bi bi-person-fill"></i> {{ rent.user.username }}</td>
-                        <td>{{ rent.rent_date|date:"Y-m-d" }}</td>
-                        <td>
-                            {{ rent.return_date|date:"Y-m-d" }}
-                            {% if rent.return_date and rent.return_date < now %}
-                                <span class="badge bg-danger ms-2">Overdue</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {%endif%}
-
+                        {% if not rent.returned %}
+                        <tr>
+                            <td>{{ rent.book.title }}</td>
+                            <td><i class="bi bi-person-fill"></i> {{ rent.user.username }}</td>
+                            <td>{{ rent.rent_date|date:"Y-m-d" }}</td>
+                            <td>
+                                {% if rent.return_date %}
+                                    {{ rent.return_date|date:"Y-m-d" }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rent.return_date and rent.return_date < now %}
+                                    <span class="badge bg-danger">Overdue</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Ongoing</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'returnBook' rent.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-primary">Return</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endif %}
                     {% empty %}
-                    <tr><td colspan="4" class="text-muted text-center">No books currently rented.</td></tr>
-                    
+                        <tr>
+                            <td colspan="6" class="text-muted text-center">No books currently rented.</td>
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -66,7 +81,9 @@
                         <td><span class="badge bg-success">{{ book.available_copies }}</span></td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="3" class="text-muted text-center">No books available.</td></tr>
+                    <tr>
+                        <td colspan="3" class="text-muted text-center">No books available.</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -93,7 +110,9 @@
                         <td>{{ book.author }}</td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="2" class="text-muted text-center">No books are currently unavailable.</td></tr>
+                    <tr>
+                        <td colspan="2" class="text-muted text-center">No books are currently unavailable.</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -101,5 +120,4 @@
     </div>
 
 </div>
-
-{%endblock%}
+{% endblock %}

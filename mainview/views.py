@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
 from django.db import models
@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from datetime import datetime, timedelta
 
-from .forms import SignUpForm
+from .forms import SignUpForm, AddBookForm
 from .models import Book, Rent
 
 User = get_user_model()
@@ -145,21 +145,44 @@ def myRents_view(request):
 
 
 def returnBook_view(request, rent_id):
-    try:
-        rent = Rent.objects.get(id=rent_id, user=request.user, returned=False)
-    except Rent.DoesNotExist:
-        messages.error(request, 'Rent not found.')
+    rent = get_object_or_404(Rent, id=rent_id, returned=False)
+
+    if rent.user != request.user and not request.user.is_staff:
+        messages.error(request, "You do not have permission to return this book.")
         return redirect('myRents')
 
-    # Mark the book as returned
     rent.returned = True
     rent.returned_at = timezone.now()
     rent.save()
 
-    # Increase the available copies of the book
     book = rent.book
     book.available_copies += 1
     book.save()
 
     messages.success(request, f'You have successfully returned {book.title}.')
+    if request.user.is_staff:
+        return redirect('reports')
     return redirect('myRents')
+
+
+def addBook_view(request):
+    if not request.user.is_staff:
+        messages.error(request, 'You do not have permission to add books.')
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = AddBookForm(request.POST)
+        if form.is_valid():
+            book = form.save(commit=False)
+            book.save()
+            messages.success(request, f'Book "{book.title}" added successfully.')
+            return redirect('home')
+        else:
+            messages.error(request, 'Error adding book. Please correct the errors below.')
+            return render(request, "addBook.html", {"form": form})
+
+     
+    form = AddBookForm()
+    return render(request, "addBook.html", {
+        "form": form
+    })

@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
-
+from .models import Book
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(widget = forms.TextInput(attrs={'class':'form-control'}), required=True, label='Email')
@@ -36,3 +36,15 @@ class SignUpForm(UserCreationForm):
         if commit:
             user.save()
         return user
+    
+
+class AddBookForm(forms.ModelForm):
+    class Meta:
+        model = Book
+        fields = ['title', 'author', 'published_date', 'available_copies']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'author': forms.TextInput(attrs={'class': 'form-control'}),
+            'published_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'available_copies': forms.NumberInput(attrs={'class': 'form-control'}),
+        }

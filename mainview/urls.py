@@ -10,4 +10,5 @@ urlpatterns = [
     path("reports/", views.reports_view, name="reports"),
     path("myRents/", views.myRents_view, name="myRents"),
     path("returnBook/<int:rent_id>/", views.returnBook_view, name="returnBook"),
+    path("addBook/", views.addBook_view, name="addBook"),
 ]
