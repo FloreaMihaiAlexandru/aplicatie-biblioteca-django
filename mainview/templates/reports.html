@@ -21,6 +21,7 @@
                 </thead>
                 <tbody>
                     {% for rent in rented_books %}
+                    {%if rent.returned == 0 %}
                     <tr>
                         <td>{{ rent.book.title }}</td>
                         <td><i class="bi bi-person-fill"></i> {{ rent.user.username }}</td>
@@ -32,8 +33,11 @@
                             {% endif %}
                         </td>
                     </tr>
+                    {%endif%}
+
                     {% empty %}
                     <tr><td colspan="4" class="text-muted text-center">No books currently rented.</td></tr>
+                    
                     {% endfor %}
                 </tbody>
             </table>

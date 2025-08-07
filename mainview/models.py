@@ -18,6 +18,8 @@ class Rent(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     rent_date = models.DateTimeField(auto_now_add=True)
     return_date = models.DateTimeField(blank=True, null=True)
+    returned = models.BooleanField(default=False)
+    returned_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.user.username} rented {self.book.title} on {self.rent_date.strftime("%Y-%m-%d %H:%M:%S")}'

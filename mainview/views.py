@@ -132,3 +132,34 @@ def reports_view(request):
         'now': timezone.now()
 
     })
+
+
+def myRents_view(request):
+    returned_rents = Rent.objects.filter(user=request.user, returned=True).select_related('book')
+    active_rents = Rent.objects.filter(user=request.user, returned=False).select_related('book')
+    return render(request, "myRents.html", {
+        "returned_rents": returned_rents,
+        "active_rents": active_rents,
+        'now': timezone.now()
+    })
+
+
+def returnBook_view(request, rent_id):
+    try:
+        rent = Rent.objects.get(id=rent_id, user=request.user, returned=False)
+    except Rent.DoesNotExist:
+        messages.error(request, 'Rent not found.')
+        return redirect('myRents')
+
+    # Mark the book as returned
+    rent.returned = True
+    rent.returned_at = timezone.now()
+    rent.save()
+
+    # Increase the available copies of the book
+    book = rent.book
+    book.available_copies += 1
+    book.save()
+
+    messages.success(request, f'You have successfully returned {book.title}.')
+    return redirect('myRents')

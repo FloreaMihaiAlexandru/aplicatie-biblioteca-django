@@ -1,0 +1,81 @@
+{%extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <!-- Active Rents -->
+    <div class="card mb-5 shadow-sm">
+        <div class="card-header bg-warning-subtle">
+            <h5 class="mb-0">Currently Borrowed Books</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Rented On</th>
+                        <th>Return By</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rent in active_rents %}
+                    <tr>
+                        <td>{{ rent.book.title }}</td>
+                        <td>{{ rent.rent_date|date:"Y-m-d" }}</td>
+                        <td>{{ rent.return_date|date:"Y-m-d" }}</td>
+                        <td>
+                            {% if rent.return_date and rent.return_date < now %}
+                                <span class="badge bg-danger">Overdue</span>
+                            {% else %}
+                                <span class="badge bg-success">Ongoing</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'returnBook' rent.id %}">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-secondary">Return</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-muted text-center">You have no active borrowed books.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Returned Rents -->
+    <div class="card mb-5 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Returned Books</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Rented On</th>
+                        <th>Returned On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rent in returned_rents %}
+                    <tr>
+                        <td>{{ rent.book.title }}</td>
+                        <td>{{ rent.rent_date|date:"Y-m-d" }}</td>
+                        <td>{{ rent.returned_at|date:"Y-m-d" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-muted text-center">No books have been returned yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{%endblock%}
